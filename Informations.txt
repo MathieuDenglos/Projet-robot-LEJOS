@@ -1,3 +1,33 @@
+
+fonction_recursive()
+
+if(robbot.treasure_found)
+    demi_tour();
+    avancer();
+    return;
+
+while(robot.orientation != corridor.orientation)
+    tourner_90_horaire();
+
+avancer();
+
+corridor.node = node(robot.get_couleur())
+
+if(corridor.node.color == cul_de_sac)
+    demi_tour();
+    avancer();
+    return;
+
+else if(corridor.node.color == carrefour)
+    corridor.node.corrdidors = get_corridor()
+    for(corridors)
+        fonctionn_recursive();
+    
+else if(corridor.node.color == )
+
+
+
+
 Informations et objectifs du projet
 
 Travailler sur l'orienté objet

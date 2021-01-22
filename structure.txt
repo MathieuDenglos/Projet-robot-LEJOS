@@ -1,0 +1,67 @@
+enum Orientation 
+    objets :
+    → NORD, EST, SUD, OUEST;
+
+    methodes : 
+    droite()                                    public final Orientation
+        → retourne l'orientation à droite
+
+    gauche()                                    public final Orientation
+        → retourne l'orientation à gauche
+
+Class Constantes
+    objets :
+    → moteur_droite                             public static final
+    → moteur_gauche                             public static final
+    → capteur_couleur                           public static final
+    → tresor = jaune                            public static final Color
+    → noeud = bleu                              public static final Color
+    → cul_de_sac = vert                         public static final Color
+    → debut = ?                                 public static final Color
+    → time_to_turn                              public static
+
+Class Robot
+    objets :
+    → orientation = Orientation.Nord            private Orientation
+    → treasure_found                            private boolean
+    → begining_found                            private boolean
+
+    methodes :
+    → avancer();
+        → avance jusqu'à trouver un noeud
+        → Compte la distance parcourus                                                      //si on veut gérer les boucles
+    → tourner_gauche_90();
+        → tourne le robot à gauche
+        → change l'orientation du robot
+    → tourner_droite_90();
+        → tourne le robot à droite
+        → change l'orientation du robot
+    → presence_ligne();
+        → fait tourner le robot légèrement à gauche et à droite et l'arrête si une ligne noire est détectée
+        → retourne vrai si une ligne noire est détectée
+
+
+Class Noeud
+    objets :
+    → couloirs                                  private vector Couloir
+    → couleur                                   private Color
+
+    méthode : 
+    → constructeur(Color)
+        → prend la couleur du noeud
+    → analyse()
+        → analyse le noeud
+    
+
+
+Class Couloir
+    objets
+    → distance                                  private int                                 //si on veut gérer les boucles
+    → orientation                               private Orientation
+    → node                                      private node
+
+    methode:
+    → constructeur(orientation)
+        → prend l'orientation
+    → verifier_orientation(robot)
+        → retourne vrai si l'orientation du corridor et du robot sont identiques
