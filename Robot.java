@@ -160,4 +160,12 @@ public class Robot {
     public Orientation get_orientation() {
         return this.orientation;
     }
+
+    public boolean get_tresor_trouve() {
+        return this.tresor;
+    }
+
+    public boolean set_tresor_trouve(boolean tresor_trouve) {
+        this.tresor = tresor_trouve;
+    }
 }
