@@ -81,7 +81,7 @@ public class Robot {
 
         // tourne jusqu'à détecter uneligne noire ou après avoir tourné de 60°
         boolean ligne = false;
-        while ((ecart_gauche != 0 && ecart_droite != 0) && (ligne || stop)) {
+        while ((ecart_gauche != 0 && ecart_droite != 0) && (!ligne || !stop)) {
 
             // change la vitesse de rotation, actualise l'écart et vérifie la couleur
             rotation_gauche(P * ecart_gauche);
