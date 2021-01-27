@@ -1,7 +1,8 @@
-package files;
+//package files;
 
 import lejos.nxt.ColorSensor;
 import lejos.nxt.ColorSensor.Color;
+import lejos.nxt.remote.RemoteMotor;
 import lejos.nxt.SensorPort;
 import lejos.nxt.NXTRegulatedMotor;
 import lejos.nxt.Motor;
@@ -12,8 +13,10 @@ public class Robot {
     private boolean tresor;
     private Orientation orientation = Orientation.NORD;
     private final ColorSensor capteur_couleur = new ColorSensor(SensorPort.S1);
-    private NXTRegulatedMotor moteur_gauche = Motor.A;
-    private NXTRegulatedMotor moteur_droite = Motor.B;
+    private RemoteMotor moteur_gauche = Motor.A;
+    private RemoteMotor moteur_droite = Motor.B;
+    // private NXTRegulatedMotor moteur_gauche = Motor.A;
+    // private NXTRegulatedMotor moteur_droite = Motor.B;
     private final float coefficient_rotation = (float) ((2.0 * 48.0) / (56.0)); // D/2d
     private final int distance_roue_capteur = 64;
     private Color couleur_scannee;
@@ -130,9 +133,9 @@ public class Robot {
         couleur_scannee = capteur_couleur.getColor();
     }
 
-    public Noeud scan() {// renvoi un node
+    // public Noeud scan() {// renvoi un node
 
-    }
+    // }
 
     private void rotation_gauche(int vitesse) {
         // controle la vitesse et le sens de rotation de la roue gauche
@@ -165,7 +168,7 @@ public class Robot {
         return this.tresor;
     }
 
-    public boolean set_tresor_trouve(boolean tresor_trouve) {
+    public void set_tresor_trouve(boolean tresor_trouve) {
         this.tresor = tresor_trouve;
     }
 }
