@@ -6,6 +6,7 @@ import lejos.nxt.ColorSensor.Color;
 import lejos.nxt.SensorPort;
 import lejos.nxt.NXTRegulatedMotor;
 import lejos.nxt.Motor;
+import lejos.nxt.Button;
 
 public class Robot {
 
@@ -23,7 +24,26 @@ public class Robot {
     public void calibration() {
         // Programme d'initialisation, execute différents tests pour calibrer le robot
         // objectif de diminuer les risques d'erreurs
-        red_avg = capteur_couleur.getColor().getRed();
+        int color = Color.WHITE;
+        /*
+         * while(color==Color.BLUE) {
+         * System.out.println(capteur_couleur.getColor().getRed()+" "+capteur_couleur.
+         * getColor().getGreen()+" "+capteur_couleur.getColor().getBlue()); }
+         */
+        int white = capteur_couleur.getColor().getRed();
+        System.out.println(white);
+        rotation_gauche(30);
+        rotation_droite(30);
+        while (color != Color.BLACK) {
+            color = capteur_couleur.getColor().getColor();
+        }
+        moteur_gauche.stop();
+        moteur_droite.stop();
+        int black = capteur_couleur.getColor().getRed();
+        System.out.println(black);
+        red_avg = (white + black) / 2;
+        System.out.println(red_avg);
+        Button.waitForAnyPress();
     }
 
     public void avancer_au_noeud(Orientation direction) {
@@ -124,19 +144,25 @@ public class Robot {
     public void avancer() {
 
         // initialise les accélérations et fait avancer le robot
-        int ecart, speed = 180, P = 5, acceleration = 1800, acceleration2 = 600;
+        int ecart, speed = 0, P = -1, acceleration = 1000, acceleration2 = 600;
         moteur_gauche.setAcceleration(acceleration);
         moteur_droite.setAcceleration(acceleration);
-        moteur_gauche.forward();
-        moteur_droite.forward();
-
         // continue d'avancer tant que le robot ne détecte pas de noeud
-        int couleur = capteur_couleur.getColor().getColor();
-        while (couleur != TypeNoeud.cul_de_sac && couleur != TypeNoeud.debut && couleur != TypeNoeud.embranchement
-                && couleur != TypeNoeud.tresor) {
-            ecart = P * capteur_couleur.getColor().getRed() - red_avg;
-            avancer_gauche(speed + ecart);
-            avancer_droite(speed - ecart);
+        int couleur = Color.BLACK, couleur1 = Color.BLACK, couleur2 = Color.BLACK, couleur3 = Color.BLACK;
+
+        while (couleur != 100)
+        // while (couleur != TypeNoeud.cul_de_sac && couleur != TypeNoeud.debut &&
+        // couleur != TypeNoeud.embranchement&& couleur != TypeNoeud.tresor)
+        {
+            ecart = P * (capteur_couleur.getColor().getRed() - red_avg);
+            rotation_gauche(speed + ecart);
+            rotation_droite(speed - ecart);
+            couleur3 = couleur2;
+            couleur2 = couleur1;
+            couleur1 = capteur_couleur.getColor().getColor();
+            couleur = Couleur_Moyenne(couleur1, couleur2, couleur3);
+            System.out.println(couleur);
+
         }
         // arrête les moteurs
         moteur_gauche.stop();
@@ -151,7 +177,7 @@ public class Robot {
         moteur_gauche.setAcceleration(acceleration2);
         moteur_droite.setAcceleration(acceleration2);
 
-        int consigne = (int) (56.0 * 3.1415 * distance_roue_capteur / 360);
+        int consigne = (int) (distance_roue_capteur * (360 / (56.0 * 3.1415))); // 56.0 : diamètre des roues
         ecart = moteur_gauche.getTachoCount() - consigne;
         P = -3;
         while (ecart != 0) {
@@ -191,16 +217,13 @@ public class Robot {
         // cet ordre pour optimisation et limiter les rotations
         ArrayList<Couloir> couloirs = new ArrayList<Couloir>();
         if (c) {
-            Couloir couloir_a = new Couloir(orientation.gauche().gauche());
-            couloirs.add(couloir_a);
+            couloirs.add(new Couloir(orientation));
         }
         if (b) {
-            Couloir couloir_b = new Couloir(orientation.gauche());
-            couloirs.add(couloir_b);
+            couloirs.add(new Couloir(orientation.gauche().gauche()));
         }
         if (a) {
-            Couloir couloir_c = new Couloir(orientation);
-            couloirs.add(couloir_c);
+            couloirs.add(new Couloir(orientation.gauche()));
         }
         return new Noeud(couleur_scannee, couloirs);
     }
