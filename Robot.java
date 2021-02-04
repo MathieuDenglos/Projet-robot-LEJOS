@@ -1,9 +1,9 @@
-package files;
 
 import java.util.ArrayList;
 import lejos.nxt.ColorSensor;
 import lejos.nxt.ColorSensor.Color;
 import lejos.nxt.SensorPort;
+import lejos.util.Delay;
 import lejos.nxt.NXTRegulatedMotor;
 import lejos.nxt.Motor;
 import lejos.nxt.Button;
@@ -20,30 +20,51 @@ public class Robot {
     private final int distance_roue_capteur = 64;
     private Color couleur_scannee;
     private int red_avg = 140;
-
+    
+    public void test() {
+    	calibration();
+    	avancer();
+    	Button.waitForAnyPress();
+    }
+    
     public void calibration() {
         // Programme d'initialisation, execute différents tests pour calibrer le robot
         // objectif de diminuer les risques d'erreurs
-        int color = Color.WHITE;
-        /*
-         * while(color==Color.BLUE) {
-         * System.out.println(capteur_couleur.getColor().getRed()+" "+capteur_couleur.
-         * getColor().getGreen()+" "+capteur_couleur.getColor().getBlue()); }
-         */
-        int white = capteur_couleur.getColor().getRed();
-        System.out.println(white);
+    	
+    	int color=Color.WHITE;
+    	/*
+    	capteur_couleur.calibrateHigh();
         rotation_gauche(30);
         rotation_droite(30);
-        while (color != Color.BLACK) {
-            color = capteur_couleur.getColor().getColor();
+    	while (color!=Color.BLACK) {
+        	color=capteur_couleur.getColor().getColor();
         }
-        moteur_gauche.stop();
-        moteur_droite.stop();
-        int black = capteur_couleur.getColor().getRed();
+    	moteur_gauche.stop();
+    	moteur_droite.stop();
+    	capteur_couleur.calibrateLow();
+    	System.out.println("Placer le robot sur du blanc");
+    	Button.waitForAnyPress();
+		*/
+    	int white=capteur_couleur.getColor().getRed();
+    	
+    	System.out.println(white);
+    	System.out.println(capteur_couleur.getColor().getRed()+" "+capteur_couleur.getColor().getGreen()+" "+capteur_couleur.getColor().getBlue());
+        rotation_gauche(30);
+        rotation_droite(30);
+        color=Color.WHITE;
+    	while (color!=Color.BLACK) {
+        	color=capteur_couleur.getColor().getColor();
+        }
+    	moteur_gauche.stop();
+    	moteur_droite.stop();
+    	
+        int black=capteur_couleur.getColor().getRed();
         System.out.println(black);
-        red_avg = (white + black) / 2;
-        System.out.println(red_avg);
-        Button.waitForAnyPress();
+        System.out.println(capteur_couleur.getColor().getRed()+" "+capteur_couleur.getColor().getGreen()+" "+capteur_couleur.getColor().getBlue());
+    	
+        red_avg = (white+black)/2;
+    	System.out.println(red_avg);
+    	Button.waitForAnyPress();
     }
 
     public void avancer_au_noeud(Orientation direction) {
@@ -140,37 +161,49 @@ public class Robot {
         // retourne si le robot est sur la ligne ou non
         return ligne;
     }
-
+    
+    public void afficher(int a) {
+        //TODO
+    }
+    
     public void avancer() {
 
         // initialise les accélérations et fait avancer le robot
-        int ecart, speed = 0, P = -1, acceleration = 1000, acceleration2 = 600;
+        int acceleration = 1000, acceleration2 = 600;
+        float ecart , speed = 0, P=-0.5f;
         moteur_gauche.setAcceleration(acceleration);
         moteur_droite.setAcceleration(acceleration);
-        // continue d'avancer tant que le robot ne détecte pas de noeud
+        
+        //initialise le capteur de couleur;
         int couleur = Color.BLACK, couleur1 = Color.BLACK, couleur2 = Color.BLACK, couleur3 = Color.BLACK;
-
-        while (couleur != 100)
-        // while (couleur != TypeNoeud.cul_de_sac && couleur != TypeNoeud.debut &&
-        // couleur != TypeNoeud.embranchement&& couleur != TypeNoeud.tresor)
-        {
-            ecart = P * (capteur_couleur.getColor().getRed() - red_avg);
-            rotation_gauche(speed + ecart);
-            rotation_droite(speed - ecart);
+        Color mesure = new Color(0,0,0,0,0);
+        
+        // continue d'avancer tant que le robot ne détecte pas de noeud
+        
+        while (couleur != TypeNoeud.cul_de_sac && couleur != TypeNoeud.debut &&
+        couleur != TypeNoeud.embranchement&& couleur != TypeNoeud.tresor)
+        {	
+        	mesure=capteur_couleur.getColor();
             couleur3 = couleur2;
             couleur2 = couleur1;
-            couleur1 = capteur_couleur.getColor().getColor();
-            couleur = Couleur_Moyenne(couleur1, couleur2, couleur3);
-            System.out.println(couleur);
-
+            couleur1 = mesure.getColor();
+            couleur = Couleur_Moyenne(couleur1,couleur2,couleur3);
+            afficher(couleur);
+            System.out.println("R"+mesure.getRed()+"G"+mesure.getGreen()+"B"+mesure.getBlue());
+            ecart = P * (mesure.getRed() - red_avg);
+            rotation_gauche(speed - ecart);
+            rotation_droite(speed + ecart);
         }
+
         // arrête les moteurs
         moteur_gauche.stop();
         moteur_droite.stop();
 
         // stocke la couleur actuellement visible (celle du noeud)
-        couleur_scannee = capteur_couleur.getColor();
-
+        couleur_scannee = mesure;
+        
+        //avance de quelques centimètres pour avoir le centre de rotation du robot sur le noeud
+        
         moteur_gauche.resetTachoCount();
         moteur_droite.resetTachoCount();
 
@@ -179,14 +212,21 @@ public class Robot {
 
         int consigne = (int) (distance_roue_capteur * (360 / (56.0 * 3.1415))); // 56.0 : diamètre des roues
         ecart = moteur_gauche.getTachoCount() - consigne;
-        P = -3;
+        P = -3f;
         while (ecart != 0) {
             ecart = moteur_gauche.getTachoCount() - consigne;
             rotation_gauche(P * ecart);
             rotation_droite(P * ecart);
         }
     }
-
+    
+    public int Couleur_Moyenne(int a, int b, int c) {
+    	if(a==b && b==c) {
+    		return a;
+    	}
+    	return Color.BLACK;
+    }
+   
     public Noeud scan() {// renvoi un node
         boolean a = false, b = false, c = false;
 
@@ -228,7 +268,7 @@ public class Robot {
         return new Noeud(couleur_scannee, couloirs);
     }
 
-    private void rotation_gauche(int vitesse) {
+    private void rotation_gauche(float vitesse) {
         // controle la vitesse et le sens de rotation de la roue gauche
         // La méthode setSpeed ne permet pas de controller le sens de rotation du moteur
         if (vitesse >= 0) {
@@ -240,7 +280,7 @@ public class Robot {
         }
     }
 
-    private void rotation_droite(int vitesse) {
+    private void rotation_droite(float vitesse) {
 
         if (vitesse >= 0) {
             moteur_droite.forward();
@@ -251,7 +291,7 @@ public class Robot {
         }
     }
 
-    private void avancer_gauche(int vitesse) {
+    public void avancer_gauche(float vitesse) {
         // Fonction qui sera utilisé dans avancer
         if (vitesse >= 0) {
             moteur_gauche.forward();
@@ -261,7 +301,7 @@ public class Robot {
         }
     }
 
-    private void avancer_droite(int vitesse) {
+    public void avancer_droite(float vitesse) {
         // Fonction qui sera utilisé dans avancer
         if (vitesse >= 0) {
             moteur_droite.forward();
