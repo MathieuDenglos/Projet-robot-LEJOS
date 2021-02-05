@@ -1,45 +1,27 @@
 public enum Orientation {
+    NORD, EST, SUD, OUEST;
 
-    NORD(0), OUEST(90), SUD(180), EST(270);
+    private static final Orientation[] valeurs = values();
 
-    private int deg;
-
-    Orientation(int deg) {
-        this.deg = deg;
+    public final Orientation droite() {
+        return valeurs[(this.ordinal() + 1) % valeurs.length];
     }
 
-    // Pour les deux fonctions qui suivent s'intéresser à la méthode ordinal
-    public Orientation droite() {
-        int degD = (deg + 270) % 360;
-        switch (degD) {
-            case 90:
-                return OUEST;
-            case 180:
-                return SUD;
-            case 270:
-                return EST;
-            default: // for the case 0
-                return NORD;
-        }
+    public final Orientation gauche() {
+        return valeurs[(this.ordinal() - 1 + valeurs.length) % valeurs.length];
     }
 
-    public Orientation gauche() {
-        int degD = (deg + 90) % 360;
-        switch (degD) {
-            case 90:
-                return OUEST;
-            case 180:
-                return SUD;
-            case 270:
-                return EST;
-            default: // for the case 0
-                return NORD;
-        }
+    public void print_orientation() {
+        System.out.println(this.name());
     }
 
-    int difference(Orientation c) {
-        // Inutile dans l"état, ne retourne pas le chemin le plus optimisé
-        return Math.abs(this.deg - c.deg) % 160;
+    public final int difference(Orientation comparaison) {
+        int temp = this.ordinal() - comparaison.ordinal();
+        if (temp == -3)
+            return 1;
+        if (temp == 3)
+            return -1;
+        else
+            return temp;
     }
-
-}
+};
