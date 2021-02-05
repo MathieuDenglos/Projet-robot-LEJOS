@@ -1,6 +1,5 @@
 public class Couloir {
 
-    private int distance = 0;
     private Orientation orientation;
     private Noeud noeud;
 
