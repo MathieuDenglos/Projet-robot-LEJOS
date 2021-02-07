@@ -7,6 +7,7 @@ public class Noeud {
     private Color couleur;
 
     public Noeud(Color couleur, ArrayList<Couloir> couloirs) {
+        // Vérifie que la couleur envoyée correspond bien à une couleur de noeud
         if (couleur.getColor() != TypeNoeud.tresor && couleur.getColor() != TypeNoeud.embranchement
                 && couleur.getColor() != TypeNoeud.cul_de_sac) {
             System.out.println("ERREUR RENTREE DANS LE CONSTRUCTEUR DE NOEUD");
@@ -25,6 +26,7 @@ public class Noeud {
     }
 
     public void afficherNoeud() {
+        // afficher la couleur du noeud et le nombre de couloirs qui en sortent
         System.out.println("La couleur du noeud est : " + couleur);
         if (couleur.getColor() == TypeNoeud.embranchement)
             System.out.println("Le nombre de chemin est :" + couloirs.size());
