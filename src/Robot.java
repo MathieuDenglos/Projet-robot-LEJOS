@@ -48,7 +48,6 @@ public class Robot {
         // avance jusqu'a detecter du noir
         rotation_gauche(30);
         rotation_droite(30);
-        color = Color.WHITE;
         while (color != Color.BLACK) {
             color = capteur_couleur.getColor().getColor();
         }
@@ -77,25 +76,17 @@ public class Robot {
      */
     public void avancer_au_noeud(Orientation direction) {
         this.tourner_vers(direction); // S'oriente dans la bonne direction
-        this.trouver_ligne(true); // Positionne correctement le robot par rapport a la ligne
         this.avancer(); // lance le suiveur de ligne
     }
 
-    public void tourner_gauche() {
-        this.tourner(-90);
-        orientation = orientation.gauche();
-    }
-
-    public void tourner_droite() {
-        this.tourner(90);
-        orientation = orientation.droite();
-    }
-
-    public void tourner_vers(Orientation direction) {
+    private void tourner_vers(Orientation direction) {
 
         // Calcule l'angle entre sa position initiale et la position d'arrivée
         // tourne de l'angle et actualise la direction du robot
         int angle = orientation.difference(direction) * -90;
+
+        // ajoute un décalage afin de se trouver à gauche de la ligne
+        angle += 20;
         tourner(angle);
         orientation = direction;
     }
@@ -128,77 +119,32 @@ public class Robot {
         moteur_droite.setSpeed(0);
     }
 
-    public boolean trouver_ligne(boolean stop) {
-
-        tourner(-30);
-
-        // définit la rotation que chaque moteur doit réaliser ainsi que son écart
-        int consigne_gauche = (int) (60 * coefficient_rotation);
-        int consigne_droite = -((int) (60 * coefficient_rotation));
-        int P = -1;
-        moteur_gauche.resetTachoCount();
-        moteur_droite.resetTachoCount();
-        int ecart_gauche = moteur_gauche.getTachoCount() - consigne_gauche;
-        int ecart_droite = moteur_droite.getTachoCount() - consigne_droite;
-
-        // définit l'accélération des moteurs
-        moteur_gauche.setAcceleration(200);
-        moteur_droite.setAcceleration(200);
-
-        // tourne jusqu'à détecter une ligne noire ou après avoir tourné de 60°
-        boolean ligne = false;
-        while ((ecart_gauche != 0 && ecart_droite != 0) && (!ligne || !stop)) {
-
-            // change la vitesse de rotation, actualise l'écart et vérifie la couleur
-            rotation_gauche(limite_vitesse(P * ecart_gauche, 30));
-            rotation_droite(limite_vitesse(P * ecart_droite, 30));
-            ecart_gauche = (moteur_gauche.getTachoCount() - consigne_gauche);
-            ecart_droite = (moteur_droite.getTachoCount() - consigne_droite);
-            if (!ligne) {
-                ligne = capteur_couleur.getColor().getColor() == TypeNoeud.ligne;
-            }
-        }
-
-        // arrête les moteurs
-        moteur_gauche.stop();
-        moteur_droite.stop();
-
-        // tourne le robot le robot de 30° si aucune ligne noire n'a été trouvée
-        // dans l'objectif de le recentrer
-        if (!(ligne && stop)) {
-            tourner(-30);
-        }
-
-        // retourne si le robot est sur la ligne ou non
-        return ligne;
-    }
-
     public void afficher(int a) {
         // Affiche la couleur sur l'écran du robot
         switch (a) {
-            case Color.BLACK:
-                System.out.println("Noir");
-                break;
+        case Color.BLACK:
+            System.out.println("Noir");
+            break;
 
-            case Color.WHITE:
-                System.out.println("Blanc");
-                break;
+        case Color.WHITE:
+            System.out.println("Blanc");
+            break;
 
-            case Color.BLUE:
-                System.out.println("Bleu");
-                break;
+        case Color.BLUE:
+            System.out.println("Bleu");
+            break;
 
-            case Color.GREEN:
-                System.out.println("Vert");
-                break;
+        case Color.GREEN:
+            System.out.println("Vert");
+            break;
 
-            case Color.YELLOW:
-                System.out.println("Jaune");
-                break;
+        case Color.YELLOW:
+            System.out.println("Jaune");
+            break;
 
-            case Color.RED:
-                System.out.println("Rouge");
-                break;
+        case Color.RED:
+            System.out.println("Rouge");
+            break;
         }
     }
 
