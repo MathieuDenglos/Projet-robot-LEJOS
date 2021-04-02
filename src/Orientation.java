@@ -1,6 +1,6 @@
 public enum Orientation {
 
-    // Les différentes valeurs
+    // Les differentes valeurs
     NORD, EST, SUD, OUEST;
 
     // tableau qui contient les valeurs de l'enum {NORD, EST, SUD, OUEST}
@@ -21,7 +21,7 @@ public enum Orientation {
     /**
      * compare deux directions
      * 
-     * @param comparaison L'orientation visée
+     * @param comparaison L'orientation visee
      * @return Le nombre de quarts de tours le plus faible vers la direction
      */
     public final int difference(Orientation comparaison) {

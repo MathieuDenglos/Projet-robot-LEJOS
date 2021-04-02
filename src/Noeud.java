@@ -7,7 +7,7 @@ public class Noeud {
     private Color couleur;
 
     public Noeud(Color couleur, ArrayList<Couloir> couloirs) {
-        // Vérifie que la couleur envoyée correspond bien à une couleur de noeud
+        // Verifie que la couleur envoyee correspond bien a une couleur de noeud
         if (couleur.getColor() != TypeNoeud.tresor && couleur.getColor() != TypeNoeud.embranchement
                 && couleur.getColor() != TypeNoeud.cul_de_sac) {
             System.out.println("ERREUR RENTREE DANS LE CONSTRUCTEUR DE NOEUD");

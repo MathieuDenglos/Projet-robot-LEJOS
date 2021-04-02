@@ -1,6 +1,6 @@
 public class Labyrinthe {
     public static void main(String[] args) {
-        // crée un robot, le calibre,
+        // cree un robot, le calibre,
         Robot robot = new Robot();
         robot.calibration();
         Couloir couloir = new Couloir(Orientation.NORD);
