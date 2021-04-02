@@ -76,37 +76,53 @@ public class Robot {
      */
     public void avancer_au_noeud(Orientation direction) {
         this.tourner_vers(direction); // S'oriente dans la bonne direction
+        this.trouver_ligne();
         this.avancer(); // lance le suiveur de ligne
+    }
+
+    public void trouver_ligne() {
+        int mesure = capteur_couleur.getColor().getRed();
+
+        // Tourner vers la droite
+        rotation_gauche(100);
+        rotation_droite(-100);
+
+        while (mesure > red_avg) {
+            mesure = capteur_couleur.getColor().getRed();
+        }
+
+        moteur_droite.stop();
+        moteur_gauche.stop();
     }
 
     private void tourner_vers(Orientation direction) {
 
-        // Calcule l'angle entre sa position initiale et la position d'arrivée
+        // Calcule l'angle entre sa position initiale et la position d'arrivÃ©e
         // tourne de l'angle et actualise la direction du robot
         int angle = orientation.difference(direction) * -90;
 
-        // ajoute un décalage afin de se trouver à gauche de la ligne
-        angle += 20;
+        // ajoute un dÃ©calage afin de se trouver Ã gauche de la ligne
+        angle -= 11;
         tourner(angle);
         orientation = direction;
     }
 
     public void tourner(int angle) {
 
-        // définit la rotation que chaque moteur doit réaliser ainsi que son écart
+        // dÃ©finit la rotation que chaque moteur doit rÃ©aliser ainsi que son Ã©cart
         int consigne_gauche = (int) (angle * coefficient_rotation);
         int consigne_droite = -((int) (angle * coefficient_rotation));
-        float P = -3;
+        float P = -2;
         moteur_gauche.resetTachoCount();
         moteur_droite.resetTachoCount();
         int ecart_gauche = moteur_gauche.getTachoCount() - consigne_gauche;
         int ecart_droite = moteur_droite.getTachoCount() - consigne_droite;
 
-        // définit l'accélération des moteurs
+        // dÃ©finit l'accÃ©lÃ©ration des moteurs
         moteur_gauche.setAcceleration(600);
         moteur_droite.setAcceleration(600);
 
-        // tourne jusqu'à avoir fais une rotation du robot de : angle
+        // tourne jusqu'Ã avoir fais une rotation du robot de : angle
         while (ecart_gauche != 0 && ecart_droite != 0) {
             rotation_gauche(limite_vitesse(P * ecart_gauche, 720f));
             rotation_droite(limite_vitesse(P * ecart_droite, 720f));
@@ -114,9 +130,9 @@ public class Robot {
             ecart_droite = (moteur_droite.getTachoCount() - consigne_droite);
         }
 
-        // arrête les moteurs
-        moteur_gauche.setSpeed(0);
-        moteur_droite.setSpeed(0);
+        // arrÃªte les moteurs
+        moteur_gauche.stop();
+        moteur_droite.stop();
     }
 
     public void afficher(int a) {
