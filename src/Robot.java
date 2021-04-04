@@ -6,6 +6,8 @@ import lejos.nxt.NXTRegulatedMotor;
 import lejos.nxt.Motor;
 import lejos.nxt.Button;
 
+// Version Sans Boucle
+
 public class Robot {
 
     // Donnes necessaire au robot
@@ -14,7 +16,9 @@ public class Robot {
     private final ColorSensor capteur_couleur = new ColorSensor(SensorPort.S3);
     private NXTRegulatedMotor moteur_gauche = Motor.B;
     private NXTRegulatedMotor moteur_droite = Motor.A;
-    private final float coefficient_rotation = (float) ((2.0 * 54.0) / (56.0)); // 2*excentricite des roues/D roue
+    private final float diametre_roue = 56f;
+    private final float coefficient_rotation = (float) ((2.0 * 54.0) / (diametre_roue)); // 2*excentricite des roues/D
+                                                                                         // roue
     private final int distance_roue_capteur = 69; // distance entre le centre de rotation et le capteur
     private Color couleur_scannee;
     private int red_avg = 140; // Valeur de la consigne du suiveur de ligne
@@ -62,7 +66,7 @@ public class Robot {
 
         // Fait la moyenne du blanc et du noir pour definir la consigne du suiveur de
         // ligne
-        red_avg = (white + black) / 2;
+        red_avg = ((white + black) / 2) - 17;
         System.out.println(red_avg);
         Button.waitForAnyPress();
     }
@@ -76,10 +80,15 @@ public class Robot {
      */
     public void avancer_au_noeud(Orientation direction) {
         this.tourner_vers(direction); // S'oriente dans la bonne direction
-        this.trouver_ligne();
+        this.trouver_ligne(); // Se place sur la ligne
         this.avancer(); // lance le suiveur de ligne
     }
 
+    /**
+     * Permet au robot de tourner jusqu'a ce que le capteur se trouve sur la ligne
+     * noire
+     *
+     */
     public void trouver_ligne() {
         int mesure = capteur_couleur.getColor().getRed();
 
@@ -87,14 +96,19 @@ public class Robot {
         rotation_gauche(100);
         rotation_droite(-100);
 
+        // Attends que le capteur detecte une couleur sombre
         while (mesure > red_avg) {
             mesure = capteur_couleur.getColor().getRed();
         }
-
+        // Arrete la rotation
         moteur_droite.stop();
         moteur_gauche.stop();
     }
 
+    /**
+     * Permet au robot de s'orienter vers une direction
+     *
+     */
     private void tourner_vers(Orientation direction) {
 
         // Calcule l'angle entre sa position initiale et la position d'arrivee
@@ -103,24 +117,35 @@ public class Robot {
 
         // ajoute un decalage afin de se trouver a gauche de la ligne
         angle -= 11;
+
         tourner(angle);
+
+        // stockage de la nouvelle orientation du robot
         orientation = direction;
     }
 
-    public void tourner(int angle) {
+    /**
+     * Ce programme controle les moteurs afin d'effectuer une rotation sur lui même
+     * d'un angle precis
+     *
+     */
+    private void tourner(int angle) {
+
+        // Parametre : Coefficient de proportionalite entre l'ecart et la vitesse des
+        // moteurs
+        float P = -2f;
+
+        // initialisation
+        moteur_gauche.resetTachoCount();
+        moteur_droite.resetTachoCount();
+        moteur_gauche.setAcceleration(600);
+        moteur_droite.setAcceleration(600);
 
         // definit la rotation que chaque moteur doit realiser ainsi que son ecart
         int consigne_gauche = (int) (angle * coefficient_rotation);
         int consigne_droite = -((int) (angle * coefficient_rotation));
-        float P = -2;
-        moteur_gauche.resetTachoCount();
-        moteur_droite.resetTachoCount();
         int ecart_gauche = moteur_gauche.getTachoCount() - consigne_gauche;
         int ecart_droite = moteur_droite.getTachoCount() - consigne_droite;
-
-        // definit l'acceleration des moteurs
-        moteur_gauche.setAcceleration(600);
-        moteur_droite.setAcceleration(600);
 
         // tourne jusqu'a avoir fais une rotation du robot de : angle
         while (ecart_gauche != 0 && ecart_droite != 0) {
@@ -164,14 +189,15 @@ public class Robot {
         }
     }
 
-    public void avancer() {
+    private void avancer() {
 
-        // initialise les accelerations et fait avancer le robot
+        // parametres de vitesse et d'acceleration
         int acceleration = 1000;
-        float ecart, speed = 150, P = -0.5f;
-        float distance_parcourue = 0;
-        moteur_gauche.resetTachoCount();
+        float speed = 150, P = -0.5f;
 
+        // initialisation
+        float ecart, distance_parcourue = 0;
+        moteur_gauche.resetTachoCount();
         moteur_gauche.setAcceleration(acceleration);
         moteur_droite.setAcceleration(acceleration);
 
@@ -182,6 +208,7 @@ public class Robot {
 
         // continue d'avancer tant que le robot ne detecte pas de noeud
         while (couleur == TypeNoeud.ligne || couleur == TypeNoeud.sol) {
+
             // a chaque iteration, fait une mesure et compare la moyenne des 3 mesures
             // precedentes pour limiter les risques de fausses mesures
             mesure = capteur_couleur.getColor();
@@ -190,7 +217,6 @@ public class Robot {
             couleur1 = mesure.getColor();
             couleur = Couleur_Moyenne(couleur1, couleur2, couleur3);
             afficher(couleur);
-            System.out.println("R=" + mesure.getRed() + " G=" + mesure.getGreen() + " B=" + mesure.getBlue());
 
             // Permet de reguler legerement la direction de rotation (pour toujours se
             // situer entre la ligne noir et le sol blanc)
@@ -198,12 +224,18 @@ public class Robot {
             rotation_gauche(speed - ecart);
             rotation_droite(speed + ecart);
         }
+
+        // mesure de la distance parcourue
         distance_parcourue = moteur_gauche.getTachoCount();
 
-        // avance jusqu'a avoir le centre de rotation du robot sur le noeud
-        int consigne = (int) (distance_roue_capteur * (360 / (56.0 * 3.1415))); // 56.0 : diametre des roues
-        ecart = moteur_gauche.getTachoCount() - consigne - distance_parcourue;
+        // Parametre : Coefficient de proportionalite entre la distance restante et la
+        // vitesse des moteurs
         P = -3f;
+
+        // ralenti jusqu'a avoir le centre de rotation du robot sur le noeud
+        int consigne = (int) (distance_roue_capteur * (360 / (diametre_roue * 3.1415))); // 56.0 : diametre des roues
+        ecart = moteur_gauche.getTachoCount() - consigne - distance_parcourue;
+
         while (ecart != 0) {
             ecart = moteur_gauche.getTachoCount() - consigne - distance_parcourue;
             rotation_gauche(limite_vitesse(P * ecart, speed));
@@ -225,24 +257,31 @@ public class Robot {
      * @param c Troisieme couleur mesuree
      * @return La couleur des trois mesures si elles sont identiques sinon noir
      */
-    public int Couleur_Moyenne(int a, int b, int c) {
+    private int Couleur_Moyenne(int a, int b, int c) {
         if (a == b && b == c) {
             return a;
         }
         return TypeNoeud.ligne;
     }
 
+    /**
+     * Renvoie un noeud avec tout ses couloirs ainsi que sa couleur.
+     * 
+     */
     public Noeud scan() {
 
         ArrayList<Couloir> couloirs = new ArrayList<Couloir>();
         if (couleur_scannee.getColor() == TypeNoeud.embranchement) {
-            boolean a = false, b = false, c = false;
+            // parametres de vitesse et d'acceleration
+            int P = -3;
+            int vmax = 100;
 
             // cree la consigne pour faire un tour complet
             int consigne_gauche = (int) (360 * coefficient_rotation);
             int consigne_droite = -((int) (360 * coefficient_rotation));
-            int P = -3;
-            int vmax = 100;
+
+            // initialisation
+            boolean a = false, b = false, c = false;
             moteur_gauche.resetTachoCount();
             moteur_droite.resetTachoCount();
             int ecart_gauche = moteur_gauche.getTachoCount() - consigne_gauche;
@@ -270,7 +309,7 @@ public class Robot {
                 }
             }
 
-            // on saut la detection de la ligne arriere (ligne d'arrivee)
+            // on saute la detection de la ligne arriere (ligne d'arrivee)
             intervalle = 5 * consigne_gauche / 8;
             while (moteur_gauche.getTachoCount() < intervalle) {
 
@@ -299,7 +338,7 @@ public class Robot {
             moteur_gauche.stop();
             moteur_droite.stop();
 
-            // rajoute les couloirs dans le tableau dans un ordre optimise
+            // rajoute les couloirs dans le tableau
             if (a) {
                 couloirs.add(new Couloir(orientation));
             }

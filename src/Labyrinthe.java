@@ -6,8 +6,7 @@ public class Labyrinthe {
         Couloir couloir = new Couloir(Orientation.NORD);
         couloir.visite_couloir(robot);
         if (robot.get_tresor_trouve()) {
-            robot.tourner(360);
-            robot.tourner(-360);
+            System.out.println("fini avec le tresor");
         }
     }
 }
