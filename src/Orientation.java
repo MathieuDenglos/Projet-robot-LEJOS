@@ -14,10 +14,6 @@ public enum Orientation {
         return valeurs[(this.ordinal() - 1 + valeurs.length) % valeurs.length];
     }
 
-    public void print_orientation() {
-        System.out.println(this.name());
-    }
-
     /**
      * compare deux directions
      * 

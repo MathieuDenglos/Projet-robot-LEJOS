@@ -24,11 +24,4 @@ public class Noeud {
     public ArrayList<Couloir> get_couloirs() {
         return couloirs;
     }
-
-    public void afficherNoeud() {
-        // afficher la couleur du noeud et le nombre de couloirs qui en sortent
-        System.out.println("La couleur du noeud est : " + couleur);
-        if (couleur.getColor() == TypeNoeud.embranchement)
-            System.out.println("Le nombre de chemin est :" + couloirs.size());
-    }
 }

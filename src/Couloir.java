@@ -29,7 +29,6 @@ public class Couloir {
         if (noeud.get_couleur() == TypeNoeud.embranchement) {
             // explore tous les embranchements et sous-embranchements du noeud
             for (Couloir couloir : noeud.get_couloirs()) {
-                System.out.println("parcours d'un chemin, " + couloir.orientation.toString());
                 couloir.visite_couloir(robot);
 
                 // Si le tresor a ete trouve plus loins dans le parcours, retourne sans verifier
@@ -45,7 +44,6 @@ public class Couloir {
         // Si le noeud contient le tresor, indique au robot que le tresor a ete trouve
         // et retourne
         else if (noeud.get_couleur() == TypeNoeud.tresor) {
-            System.out.println("tresor recupere, retour au depart");
             robot.set_tresor_trouve(true);
             robot.avancer_au_noeud(this.orientation.droite().droite());
             return;
@@ -53,7 +51,6 @@ public class Couloir {
         // Si le noeud est un cul de sac ou qu'aucune des branches ne mene au tresor,
         // fait demi tour
         else if (noeud.get_couleur() == TypeNoeud.cul_de_sac) {
-            System.out.println("cul_de_sac : demi tour");
             robot.avancer_au_noeud(this.orientation.droite().droite());
             return;
         }
